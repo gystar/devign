@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+joern/joern-cli
+data/joern
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -141,3 +144,5 @@ cython_debug/
 # static files generated from Django application using `collectstatic`
 media
 static
+
+.vscode

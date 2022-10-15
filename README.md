@@ -34,7 +34,7 @@ These instructions will get you a copy of the project up and running on your loc
 Install the necessary dependencies before running the project:
 <br/>
 ##### Software:
-* [Joern](https://joern.io/docs/)
+* [Joern v1.0.170](https://github.com/joernio/joern/releases/download/v1.0.170/joern-cli.zip)
 * [Python (=>3.6)](https://www.python.org/)
 ##### Python Libraries:
 * [Pandas (>=1.0.1)](https://pandas.pydata.org/)

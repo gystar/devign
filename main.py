@@ -7,6 +7,8 @@
     Dataset embedding and processing:
         $ python taskflows.py -e -pS
 """
+import faulthandler
+faulthandler.enable()
 
 import argparse
 import gc
@@ -127,7 +129,6 @@ def process_task(stopping):
         model.save()
 
     process.predict(model, test_loader_step)
-
 
 def main():
     """

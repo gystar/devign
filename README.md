@@ -41,7 +41,7 @@ Install the necessary dependencies before running the project:
 * [scikit-learn (>=0.22.2)](https://scikit-learn.org/stable/)
 * [PyTorch (>=1.4.0)](https://pytorch.org/)
 * [PyTorch Geometric (>=1.4.2)](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
-* [Gensim (>=3.8.1)](https://radimrehurek.com/gensim/)
+* [Gensim (=3.8.1)](https://radimrehurek.com/gensim/)
 * [cpgclientlib (>=0.11.111)](https://pypi.org/project/cpgclientlib/)
 
 ### Notes

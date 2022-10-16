@@ -47,6 +47,6 @@ class Metrics:
         logger.log_info('metrics', msg)
 
     def error(self):
-        errors = [(abs(score - (1 if score >= 0.5 else 0))/score)*100 for score, label in zip(self.scores, self.labels)]
+        errors = [(abs(score - (1 if score >= 0.5 else 0))/(score+1e-8))*100 for score, label in zip(self.scores, self.labels)]
 
         return sum(errors)/len(errors)

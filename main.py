@@ -35,6 +35,7 @@ def select(dataset):
     #print(len(result))
     #result = result.iloc[11001:]
     #print(len(result))
+    # 暂时只使用前200条数据
     result = result.head(200)
 
     return result

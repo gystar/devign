@@ -4,9 +4,14 @@ import subprocess
 import os.path
 import os
 import time
-from .cpg_client_wrapper import CPGClientWrapper
-#from ..data import datamanager as data
+from threading import Timer
 
+from .cpg_client_wrapper import CPGClientWrapper
+
+#from ..data import datamanager as data
+def kill_command(p):
+    """终止命令的函数"""
+    p.kill()
 
 def funcs_to_graphs(funcs_path):
     client = CPGClientWrapper()
@@ -34,15 +39,18 @@ def joern_parse(joern_path, input_path, output_path, file_name):
     return out_file
 
 
-def joern_create(joern_path, in_path, out_path, cpg_files):
-    joern_process = subprocess.Popen(["./" + joern_path + "joern"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+def joern_create(joern_path, in_path, out_path, cpg_files):    
     json_files = []
     for cpg_file in cpg_files:
         json_file_name = f"{cpg_file.split('.')[0]}.json"
-        json_files.append(json_file_name)
+        json_files.append(json_file_name)        
 
-        print(in_path+cpg_file)
+        print(in_path+cpg_file)  
         if os.path.exists(in_path+cpg_file):
+            joern_process = subprocess.Popen(["./" + joern_path + "joern"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            # 设置定时器去终止这个命令
+            timer = Timer(30, kill_command, [joern_process])
+
             json_out = f"{os.path.abspath(out_path)}/{json_file_name}"
             import_cpg_cmd = f"importCpg(\"{os.path.abspath(in_path)}/{cpg_file}\")\r".encode()
             script_path = f"{os.path.dirname(os.path.abspath(joern_path))}/graph-for-funcs.sc"
@@ -53,15 +61,15 @@ def joern_create(joern_path, in_path, out_path, cpg_files):
             print(joern_process.stdout.readline().decode())
             joern_process.stdin.write("delete\r".encode())
             print(joern_process.stdout.readline().decode())
-    try:
-        outs, errs = joern_process.communicate(timeout=60)
-    except subprocess.TimeoutExpired:
-        joern_process.kill()
-        outs, errs = joern_process.communicate()
-    if outs is not None:
-        print(f"Outs: {outs.decode()}")
-    if errs is not None:
-        print(f"Errs: {errs.decode()}")
+            try:
+                outs, errs = joern_process.communicate(timeout=30)
+            except subprocess.TimeoutExpired:
+                joern_process.kill()
+                outs, errs = joern_process.communicate()
+            if outs is not None:
+                print(f"Outs: {outs.decode()}")
+            if errs is not None:
+                print(f"Errs: {errs.decode()}")
     return json_files
 
 

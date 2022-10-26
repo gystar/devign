@@ -22,7 +22,9 @@ import src.data as data
 import src.prepare as prepare
 import src.process as process
 import src.utils.functions.cpg as cpg
+import shutil,sys,os
 
+CREATE_PARAMS = configs.Create()
 PATHS = configs.Paths()
 FILES = configs.Files()
 DEVICE = FILES.get_device()
@@ -36,12 +38,14 @@ def select(dataset):
     #result = result.iloc[11001:]
     #print(len(result))
     # 暂时只使用前200条数据
-    result = result.head(200)
+    result = result.head(CREATE_PARAMS.data_size)
 
     return result
 
 
 def create_task():
+    os.makedirs(PATHS.cpg, exist_ok = True)  
+    os.system(f"rm -rf {PATHS.joern} workspace")
     context = configs.Create()
     raw = data.read(PATHS.raw, FILES.raw)
     filtered = data.apply_filter(raw, select)

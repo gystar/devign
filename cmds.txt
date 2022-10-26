@@ -1,0 +1,1 @@
+./joern/joern-cli/joern-parse data/joern/ --out data/cpg/0_cpg.bin

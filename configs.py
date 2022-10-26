@@ -35,6 +35,11 @@ class Create(Config):
     def joern_cli_dir(self):
         return self.get_property('joern_cli_dir')
 
+    @property
+    def data_size(self):
+        return self.get_property('data_size')
+
+
 
 class Data(Config):
     def __init__(self, config):

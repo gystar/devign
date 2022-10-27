@@ -80,12 +80,16 @@ def create_task():
         context.joern_cli_dir, PATHS.cpg, PATHS.cpg, cpg_files
     )
     for (s, slice), json_file in zip(slices, json_files):
-        graphs = prepare.json_process(PATHS.cpg, json_file) #去除一些无用的字符串信息，并使用文件数字对每个graph进行编号
+        graphs = prepare.json_process(
+            PATHS.cpg, json_file
+        )  # 去除一些无用的字符串信息，并使用文件数字对每个graph进行编号
         if graphs is None:
             print(f"Dataset chunk {s} not processed.")
             continue
-        dataset = data.create_with_index(graphs, ["Index", "cpg"]) #用上面的index对每一行数据创建索引
-        dataset = data.inner_join_by_index(slice, dataset) # 同时将分块的索引写入每一行
+        dataset = data.create_with_index(
+            graphs, ["Index", "cpg"]
+        )  # 用上面的index对每一行数据创建索引
+        dataset = data.inner_join_by_index(slice, dataset)  # 同时将分块的索引写入每一行
         print(f"Writing cpg dataset chunk {s}.")
         data.write(dataset, PATHS.cpg, f"{s}_{FILES.cpg}.pkl")
         del dataset
@@ -95,14 +99,14 @@ def create_task():
 def embed_task():
     context = configs.Embed()
     # Tokenize source code into tokens
-    dataset_files = data.get_directory_files(PATHS.cpg) #从data/cpg文件家中取出之前生成好的所有.pkl文件
+    dataset_files = data.get_directory_files(PATHS.cpg)  # 从data/cpg文件家中取出之前生成好的所有.pkl文件
     w2vmodel = Word2Vec(**context.w2v_args)
     w2v_init = True
 
     for pkl_file in dataset_files:
         file_name = pkl_file.split(".")[0]
         cpg_dataset = data.load(PATHS.cpg, pkl_file)
-        tokens_dataset = data.tokenize(cpg_dataset) # 对程序源码文本进行分词，返回分词的结果
+        tokens_dataset = data.tokenize(cpg_dataset)  # 对程序源码文本进行分词，返回分词的结果
         data.write(tokens_dataset, PATHS.tokens, f"{file_name}_{FILES.tokens}")
         # word2vec used to learn the initial embedding of each token
         w2vmodel.build_vocab(sentences=tokens_dataset.tokens, update=not w2v_init)
@@ -113,16 +117,17 @@ def embed_task():
             w2v_init = False
         # Embed cpg to node representation and pass to graph data structure
         cpg_dataset["nodes"] = cpg_dataset.apply(
-            lambda row: cpg.parse_to_nodes(row.cpg, context.nodes_dim), axis=1#context.nodes_dim限定了对多的节点个数，不足的补0，超过的会截断
+            lambda row: cpg.parse_to_nodes(row.cpg, context.max_nodes),
+            axis=1,  # context.max_nodes限定了对多的节点个数，不足的补0，超过的会截断
         )
         # remove rows with no nodes
         cpg_dataset = cpg_dataset.loc[cpg_dataset.nodes.map(len) > 0]
         cpg_dataset["input"] = cpg_dataset.apply(
             lambda row: prepare.nodes_to_input(
-                row.nodes, row.target, context.nodes_dim, w2vmodel.wv, context.edge_type
+                row.nodes, row.target, context.max_nodes, w2vmodel.wv, context.edge_type
             ),
             axis=1,
-        )# 使用w2vec对每一个节点的文本进行编码
+        )  # 使用w2vec对每一个节点的文本进行编码
         data.drop(cpg_dataset, ["nodes"])
         print(f"Saving input dataset {file_name} with size {len(cpg_dataset)}.")
         data.write(
@@ -142,6 +147,7 @@ def process_task(stopping, test_only=False):
         path=model_path,
         device=DEVICE,
         model=devign.model,
+        max_nodes=configs.Embed().max_nodes,
         learning_rate=devign.learning_rate,
         weight_decay=devign.weight_decay,
         loss_lambda=devign.loss_lambda,

@@ -69,13 +69,24 @@ class Conv(nn.Module):
         sig = torch.sigmoid(torch.flatten(res))
         return sig
 
+class Readout(nn.Module):
+    def __init__(self):
+        super(Readout, self).__init__()
+        
+    def forward(h, x):
+        concat = torch.cat([h, x], 1)
+        batch_size=0
+        concat_size = h.shape[1] + x.shape[1]
+        concat = concat.view(batch_size, self.conv1d_1_args["in_channels"], concat_size)
+        return 
 
 class Net(nn.Module):
 
-    def __init__(self, gated_graph_conv_args, conv_args, emb_size, device):
+    def __init__(self, gated_graph_conv_args, conv_args, emb_size, max_nodes, device):
         super(Net, self).__init__()
         self.ggc = GatedGraphConv(**gated_graph_conv_args).to(device)
-        self.conv = Conv(**conv_args,
+        conv_args["conv1d_1"].update({"in_channels":max_nodes})
+        self.readout = Conv(**conv_args,
                          fc_1_size=gated_graph_conv_args["out_channels"] + emb_size,
                          fc_2_size=gated_graph_conv_args["out_channels"]).to(device)
         # self.conv.apply(init_weights)
@@ -83,7 +94,7 @@ class Net(nn.Module):
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
         x = self.ggc(x, edge_index)
-        x = self.conv(x, data.x)
+        x = self.readout(x, data.x)
 
         return x
 

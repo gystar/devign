@@ -11,6 +11,7 @@ class Devign(Step):
                  path: str,
                  device: str,
                  model: dict,
+                 max_nodes:int,
                  learning_rate: float,
                  weight_decay: float,
                  loss_lambda: float):
@@ -19,7 +20,7 @@ class Devign(Step):
         self.wd = weight_decay
         self.ll = loss_lambda
         log.log_info('devign', f"LR: {self.lr}; WD: {self.wd}; LL: {self.ll};")
-        _model = Net(**model, device=device)
+        _model = Net(**model, max_nodes=max_nodes, device=device)
         super().__init__(model=_model,
                          loss_function=lambda o, t: F.binary_cross_entropy(o, t) + F.l1_loss(o, t) * self.ll,
                          optimizer=optim.Adam(_model.parameters(), lr=self.lr, weight_decay=self.wd),

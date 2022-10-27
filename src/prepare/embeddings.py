@@ -7,15 +7,15 @@ from gensim.models.keyedvectors import Word2VecKeyedVectors
 
 
 class NodesEmbedding:
-    def __init__(self, nodes_dim: int, w2v_keyed_vectors: Word2VecKeyedVectors):
+    def __init__(self, max_nodes: int, w2v_keyed_vectors: Word2VecKeyedVectors):
         self.w2v_keyed_vectors = w2v_keyed_vectors
         self.kv_size = w2v_keyed_vectors.vector_size
-        self.nodes_dim = nodes_dim
+        self.max_nodes = max_nodes
 
-        assert self.nodes_dim >= 0
+        assert self.max_nodes >= 0
 
         # Buffer for embeddings with padding
-        self.target = torch.zeros(self.nodes_dim, self.kv_size + 1).float()
+        self.target = torch.zeros(self.max_nodes, self.kv_size + 1).float()
 
     def __call__(self, nodes):
         embedded_nodes = self.embed_nodes(nodes)
@@ -99,8 +99,8 @@ class GraphsEmbedding:
         return coo
 
 
-def nodes_to_input(nodes, target, nodes_dim, keyed_vectors, edge_type):
-    nodes_embedding = NodesEmbedding(nodes_dim, keyed_vectors)
+def nodes_to_input(nodes, target, max_nodes, keyed_vectors, edge_type):
+    nodes_embedding = NodesEmbedding(max_nodes, keyed_vectors)
     graphs_embedding = GraphsEmbedding(edge_type)
     label = torch.tensor([target]).float()
 

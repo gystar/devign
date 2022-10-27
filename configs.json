@@ -75,7 +75,7 @@
         "edge_type": "Ast"
     },
     "process": {
-        "use_gpu": true,
+        "use_gpu": false,
         "epochs": 200,
         "patience": 10,
         "delta": 0,

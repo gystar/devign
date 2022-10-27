@@ -24,8 +24,9 @@ def init_weights(m):
 
 
 class Conv(nn.Module):
-
-    def __init__(self, conv1d_1, conv1d_2, maxpool1d_1, maxpool1d_2, fc_1_size, fc_2_size):
+    def __init__(
+        self, conv1d_1, conv1d_2, maxpool1d_1, maxpool1d_2, fc_1_size, fc_2_size
+    ):
         super(Conv, self).__init__()
         self.conv1d_1_args = conv1d_1
         self.conv1d_1 = nn.Conv1d(**conv1d_1)
@@ -69,26 +70,34 @@ class Conv(nn.Module):
         sig = torch.sigmoid(torch.flatten(res))
         return sig
 
+
 class Readout(nn.Module):
-    def __init__(self):
+    def __init__(self, max_nodes):
         super(Readout, self).__init__()
-        
-    def forward(h, x):
+        self.max_nodes = max_nodes
+
+    def forward(self, h, x):
         concat = torch.cat([h, x], 1)
-        batch_size=0
         concat_size = h.shape[1] + x.shape[1]
-        concat = concat.view(batch_size, self.conv1d_1_args["in_channels"], concat_size)
-        return 
+        concat = concat.view(-1, self.max_nodes * concat_size)
+        rd = torch.sigmoid(concat.mean(dim=-1))
+
+        return rd
+
 
 class Net(nn.Module):
-
     def __init__(self, gated_graph_conv_args, conv_args, emb_size, max_nodes, device):
         super(Net, self).__init__()
         self.ggc = GatedGraphConv(**gated_graph_conv_args).to(device)
-        conv_args["conv1d_1"].update({"in_channels":max_nodes})
+        conv_args["conv1d_1"].update({"in_channels": max_nodes})
+
+        """
         self.readout = Conv(**conv_args,
                          fc_1_size=gated_graph_conv_args["out_channels"] + emb_size,
                          fc_2_size=gated_graph_conv_args["out_channels"]).to(device)
+        """
+        self.readout = Readout(max_nodes)
+
         # self.conv.apply(init_weights)
 
     def forward(self, data):

@@ -77,7 +77,7 @@
     },
     "process": {
         "use_gpu": true,
-        "epochs": 1000,
+        "epochs": 200,
         "patience": 10,
         "delta": 0,
         "verbose": true,

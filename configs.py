@@ -6,9 +6,7 @@ class Config(object):
     def __init__(self, config, file_path="configs.json"):
         with open(file_path) as config_file:
             self._config = json.load(config_file)
-            self._config = self._config.get(config)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+            self._config = self._config.get(config)        
     def get_property(self, property_name):
         return self._config.get(property_name)
 
@@ -120,6 +118,14 @@ class Process(Config):
     @property
     def patience(self):
         return self.get_property('patience')
+    
+    @property
+    def delta(self):
+        return self.get_property('delta')
+
+    @property
+    def verbose(self):
+        return self.get_property('verbose')
 
     @property
     def batch_size(self):
@@ -133,6 +139,9 @@ class Process(Config):
     def shuffle(self):
         return self.get_property('shuffle')
 
+    @property
+    def device(self):
+        return torch.device("cuda" if (torch.cuda.is_available() and self.get_property('use_gpu')) else "cpu")
 
 class Devign(Config):
     def __init__(self):
